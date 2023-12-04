@@ -1,9 +1,10 @@
 import express, { Request, Response } from "express"
 import { PrismaClient, User } from '@prisma/client';
 import { config } from "dotenv"
-import { CreateUserDto, DeleteUserDto, UpdUserDto } from "./modules/users/types";
-import { createUserSchema, deleteUserSchema, updUserSchema } from "./modules/users/schemas/create-user.schema";
+import { CreateUserDto, DeleteUserDto, GeneratePDFDto, UpdUserDto } from "./modules/users/types";
+import { createUserSchema, uniqUserSchema, updUserSchema } from "./modules/users/schemas/create-user.schema";
 import bodyParser from "body-parser";
+import PDFDocument from "pdfkit";
 import * as bcrypt from "bcrypt"
 config();
 
@@ -58,7 +59,7 @@ app.delete('/users', async (req: Request, res: Response) => {
     const { email }: DeleteUserDto = req.body;
 
     try {
-        await deleteUserSchema.validateAsync({ email });
+        await uniqUserSchema.validateAsync({ email });
 
         const user = await findUser(email)
         if (!user) {
@@ -104,7 +105,42 @@ app.put('/users', async (req: Request, res: Response) => {
     }
 });
 
+app.get('/generate-pdf', async (req: Request, res: Response) => {
+    const { email } = req.query as GeneratePDFDto;
 
+    try {
+        await uniqUserSchema.validateAsync({ email });
+        const user = await findUser(email);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const doc = new PDFDocument();
+
+        doc.text(`Name: ${user.firstName} ${user.lastName}`);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${user.firstName}_${user.lastName}.pdf"`);
+
+        const buffers: any[] = [];
+        doc.on('data', (buffer: any) => buffers.push(buffer));
+        doc.on('end', async () => {
+            const pdfBuffer = Buffer.concat(buffers);
+            await prisma.user.update({
+                where: { email },
+                data: {
+                    pdf: pdfBuffer,
+                },
+            });
+            console.log(pdfBuffer.toString())
+            res.send(pdfBuffer);
+        });
+        doc.end();
+
+    } catch (error: any) {
+        res.status(500).json({ error: error?.message || 'Internal Server Error' });
+    }
+});
 
 app.listen(process.env.PORT, () => {
     console.log(`Server start on http://localhost:${process.env.PORT}`);

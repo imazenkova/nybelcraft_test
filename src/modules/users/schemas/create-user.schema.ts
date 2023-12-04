@@ -15,7 +15,7 @@ export const createUserSchema = Joi.object({
     email: Joi.string()
         .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
 })
-export const deleteUserSchema = Joi.object({
+export const uniqUserSchema = Joi.object({
     email: Joi.string()
         .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
 })
