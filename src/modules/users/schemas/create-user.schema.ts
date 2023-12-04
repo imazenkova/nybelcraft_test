@@ -20,6 +20,17 @@ export const deleteUserSchema = Joi.object({
         .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
 })
 
+export const updUserSchema = Joi.object({
+    firstName: Joi.string()
+        .min(3)
+        .max(30).optional(),
+    lastName: Joi.string()
+        .min(3)
+        .max(30).optional(),
+    email: Joi.string()
+        .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required()
+})
+
 
 // try {
 //     const value = await schema.validateAsync({ username: 'abc', birth_year: 1994 });
