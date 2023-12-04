@@ -1,6 +1,6 @@
 import Joi from "joi"
 
-export const schema = Joi.object({
+export const createUserSchema = Joi.object({
     firstName: Joi.string()
         .min(3)
         .max(30)
@@ -12,6 +12,10 @@ export const schema = Joi.object({
     password: Joi.string()
         .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
 
+    email: Joi.string()
+        .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
+})
+export const deleteUserSchema = Joi.object({
     email: Joi.string()
         .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
 })

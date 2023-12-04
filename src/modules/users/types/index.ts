@@ -1,7 +1,4 @@
-export interface CreateUserDto {
-    firstName: string
-    lastName: string
-    password: string
-    email: string
-}
+import { User } from "@prisma/client"
 
+export interface CreateUserDto extends Pick<User,"email"|"firstName"|"lastName"|"password">{}
+export interface DeleteUserDto extends Pick<User,"email">{}

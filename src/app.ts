@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express"
 import { PrismaClient, User } from '@prisma/client';
 import { config } from "dotenv"
-import { CreateUserDto } from "./modules/users/types";
-import { schema } from "./modules/users/schemas/create-user.schema";
+import { CreateUserDto, DeleteUserDto } from "./modules/users/types";
+import { createUserSchema, deleteUserSchema } from "./modules/users/schemas/create-user.schema";
 import bodyParser from "body-parser";
 import * as bcrypt from "bcrypt"
 config();
@@ -27,7 +27,7 @@ app.post('/users', async (req: Request, res: Response) => {
     const { email, firstName, lastName, password }: CreateUserDto = req.body;
 
     try {
-        await schema.validateAsync({ firstName, lastName, password, email });
+        await createUserSchema.validateAsync({ firstName, lastName, password, email });
 
         const user = await prisma.user.findUnique({ where: { email } })
         if (user) {
@@ -49,6 +49,29 @@ app.post('/users', async (req: Request, res: Response) => {
     }
 });
 
+app.delete('/users', async (req: Request, res: Response) => {
+    const { email }: DeleteUserDto = req.body;
+
+    try {
+        await deleteUserSchema.validateAsync({ email });
+
+        const user = await prisma.user.findUnique({ where: { email } })
+        if (!user) {
+            throw new Error('Such user has not  exists')
+        }
+
+        const deletedUser = await prisma.user.delete({
+            where: {
+                email
+            }
+        })
+
+        res.json(deletedUser);
+    } catch (error: any) {
+        res.status(500).json({ error: error?.message || 'Internal Server Error' });
+    }
+});
+
 app.listen(process.env.PORT, () => {
-    console.log('Server start');
+    console.log(`Server start on http://localhost:${process.env.PORT}`);
 });
