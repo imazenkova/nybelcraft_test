@@ -1,17 +1,14 @@
 import { PrismaClient } from '@prisma/client';
-import * as bcrypt from "bcrypt";
 import bodyParser from "body-parser";
 import { config } from "dotenv";
 import express, { Request, Response } from "express";
 import PDFDocument from "pdfkit";
-import jwt from "jsonwebtoken";
-import { ValidationError } from 'joi';
-import { createUserSchema, signInSchema, uniqUserSchema, updUserSchema } from "./modules/users/schemas/create-user.schema";
-import { CreateUserDto, DeleteUserDto, GeneratePDFDto, UpdUserDto } from "./modules/users/types";
-import {handleErrors, userRouter} from "./modules/users/controllers/users.controllers"
-import { findUser } from './modules/users/users.service';
+import { authRouter } from './modules/auth/controllers/auth.controller';
+import { handleErrors, userRouter } from "./modules/users/controllers/users.controllers";
+import { uniqUserSchema } from "./modules/users/schemas/validation.schemas";
+import { findUser } from './modules/users/services/users.service';
+import { GeneratePDFDto } from "./modules/users/types";
 config();
-
 
 const prisma = new PrismaClient();
 
@@ -19,10 +16,8 @@ const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(userRouter)
+app.use(authRouter)
 
-//TODO: ключ в env
-// const secretKey = process.env.SECRET_KEY
-const secretKey = " process.env.SECRET_KEY"
 
 app.post('/image', async (req: Request, res: Response) => {
     try {
@@ -65,30 +60,6 @@ app.post('/generate-pdf', async (req: Request, res: Response) => {
 
 
     } catch (error: any) {
-        handleErrors(error, res)
-    }
-});
-
-app.post('/sign-in', async (req: Request, res: Response) => {
-    const { email, password } = req.body;
-
-    try {
-        await signInSchema.validateAsync({ email, password });
-
-        const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (!passwordMatch) {
-            return res.status(401).json({ error: 'Invalid password' });
-        }
-
-        const token = jwt.sign({ userId: user.id }, secretKey);
-
-        return res.json({ token });
-    } catch (error) {
         handleErrors(error, res)
     }
 });

@@ -2,8 +2,8 @@ import { PrismaClient } from '@prisma/client';
 import { config } from "dotenv";
 import express, { Request, Response } from "express";
 import { ValidationError } from 'joi';
-import { createUserSchema, uniqUserSchema, updUserSchema } from "../schemas/create-user.schema";
-import { createUser, deleteUser, findUser, updUser } from '../users.service';
+import { createUserSchema, uniqUserSchema, updUserSchema } from "../schemas/validation.schemas";
+import { createUser, deleteUser, findUser, updUser } from '../services/users.service';
 config();
 
 const prisma = new PrismaClient();
@@ -31,10 +31,8 @@ userRouter.get('/user/:email', async (req: Request, res: Response) => {
 
 userRouter.post('/user', async (req, res) => {
     const userCredentials = req.body;
-    const { email, firstName, lastName, password } = userCredentials
-
     try {
-        await createUserSchema.validateAsync({ firstName, lastName, password, email });
+        await createUserSchema.validateAsync({ ...userCredentials });
         const newUser = await createUser(userCredentials)
         res.json(newUser);
     } catch (error) {
@@ -56,10 +54,9 @@ userRouter.delete('/user', async (req, res) => {
 
 userRouter.put('/user', async (req, res) => {
     const userCredentials = req.body;
-    const { email } = userCredentials
 
     try {
-        await updUserSchema.validateAsync({ email });
+        await updUserSchema.validateAsync({ ...userCredentials });
         const updatedUser = await updUser(userCredentials)
         res.json(updatedUser);
     } catch (error) {

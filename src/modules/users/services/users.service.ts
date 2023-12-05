@@ -1,13 +1,11 @@
 import { PrismaClient, User } from '@prisma/client';
 import * as bcrypt from "bcrypt";
 import { config } from "dotenv";
-import express from "express";
-import { CreateUserDto, DeleteUserDto, UpdUserDto } from './types';
+import { CreateUserDto, DeleteUserDto, UpdUserDto } from '../types';
 
 config();
 
 const prisma = new PrismaClient();
-export const userRouter = express.Router();
 
 export async function findUser(email: User["email"]) {
     const user = await prisma.user.findUnique({ where: { email } })
