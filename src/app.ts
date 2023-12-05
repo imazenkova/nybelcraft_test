@@ -14,9 +14,11 @@ const prisma = new PrismaClient();
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded());
 app.use(bodyParser.json());
 app.use(userRouter)
 app.use(authRouter)
+
 
 
 app.post('/image', async (req: Request, res: Response) => {

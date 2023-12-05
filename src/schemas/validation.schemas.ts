@@ -1,4 +1,4 @@
-import Joi from "joi"
+import * as Joi from "joi"
 export const createUserSchema = Joi.object({
     firstName: Joi.string()
         .min(3)
@@ -73,15 +73,6 @@ export const updUserSchema = Joi.object({
             'string.empty': 'Last name cannot be empty',
             'string.min': 'Last name must be at least {#limit} characters long',
             'string.max': 'Last name cannot exceed {#limit} characters'
-        }),
-    email: Joi.string()
-        .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
-        .required()
-        .messages({
-            'string.base': 'Email must be a string',
-            'string.empty': 'Email cannot be empty',
-            'string.email': 'Email must be a valid email address',
-            'any.required': 'Email is a required field'
         })
 });
 

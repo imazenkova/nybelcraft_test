@@ -32,10 +32,9 @@ export const createUser = async (userCredentials: CreateUserDto) => {
     return newUser
 }
 
-export const deleteUser = async (userCredentials: DeleteUserDto) => {
-    const { email } = userCredentials
-
+export const deleteUserByEmail = async (email: User["email"]) => {
     const user = await findUser(email);
+    
     if (!user) {
         throw new Error('Such user does not exist');
     }
