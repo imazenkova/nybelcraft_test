@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { config } from "dotenv";
 import express, { Request, Response } from "express";
 import { handleErrors } from '../../users/controllers/users.controllers';
-import { signInSchema } from '../../users/schemas/validation.schemas';
+import { signInSchema } from '../../../schemas/validation.schemas';
 import { signInUser } from '../services/auth.service';
 config();
 

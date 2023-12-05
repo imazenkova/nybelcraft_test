@@ -1,7 +1,7 @@
 import { PrismaClient, User } from '@prisma/client';
 import * as bcrypt from "bcrypt";
 import { config } from "dotenv";
-import { CreateUserDto, DeleteUserDto, UpdUserDto } from '../types';
+import { CreateUserDto, DeleteUserDto, UpdUserDto } from '../../../types';
 
 config();
 

@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from "bcrypt";
 import { config } from "dotenv";
 import jwt from "jsonwebtoken";
-import { SignInUserDto } from '../../users/types';
+import { SignInUserDto } from '../../../types';
 
 config();
 

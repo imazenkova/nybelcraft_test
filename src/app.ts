@@ -5,9 +5,9 @@ import express, { Request, Response } from "express";
 import PDFDocument from "pdfkit";
 import { authRouter } from './modules/auth/controllers/auth.controller';
 import { handleErrors, userRouter } from "./modules/users/controllers/users.controllers";
-import { uniqUserSchema } from "./modules/users/schemas/validation.schemas";
+import { uniqUserSchema } from "./schemas/validation.schemas";
 import { findUser } from './modules/users/services/users.service';
-import { GeneratePDFDto } from "./modules/users/types";
+import { GeneratePDFDto } from "./types";
 config();
 
 const prisma = new PrismaClient();

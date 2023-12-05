@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { config } from "dotenv";
 import express, { Request, Response } from "express";
 import { ValidationError } from 'joi';
-import { createUserSchema, uniqUserSchema, updUserSchema } from "../schemas/validation.schemas";
+import { createUserSchema, uniqUserSchema, updUserSchema } from "../../../schemas/validation.schemas";
 import { createUser, deleteUser, findUser, updUser } from '../services/users.service';
 config();
 
