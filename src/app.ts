@@ -20,25 +20,40 @@ app.use(bodyParser.json());
 //TODO: ключ в env
 // const secretKey = process.env.SECRET_KEY
 const secretKey = " process.env.SECRET_KEY"
+
 export async function findUser(email: string) {
     const user = await prisma.user.findUnique({ where: { email } })
     return user
 }
 export function handleErrors(error: any, res: Response): void {
     if (error instanceof ValidationError) {
-      const errorMessage = error.details.map((detail) => detail.message).join(', ');
-      res.status(400).json({ error: errorMessage });
+        const errorMessage = error.details.map((detail) => detail.message).join(', ');
+        res.status(400).json({ error: errorMessage });
     } else {
-      res.status(500).json({ error: error?.message || 'Internal Server Error' });
+        res.status(500).json({ error: error?.message || 'Internal Server Error' });
     }
-  }
+}
 
 app.get('/users', async (req: Request, res: Response) => {
     try {
         const users = await prisma.user.findMany();
         res.json(users);
     } catch (error) {
-        handleErrors(error,res)
+        handleErrors(error, res)
+    }
+});
+
+app.get('/user', async (req: Request, res: Response) => {
+    const { id } = req.body
+    try {
+        const users = await prisma.user.findUnique({
+            where: {
+                id
+            }
+        });
+        res.json(users);
+    } catch (error) {
+        handleErrors(error, res)
     }
 });
 
@@ -64,7 +79,7 @@ app.post('/users', async (req: Request, res: Response) => {
         })
         res.json(newUser);
     } catch (error: any) {
-        handleErrors(error,res)
+        handleErrors(error, res)
     }
 });
 
@@ -87,7 +102,7 @@ app.delete('/users', async (req: Request, res: Response) => {
 
         res.json(deletedUser);
     } catch (error: any) {
-        handleErrors(error,res)
+        handleErrors(error, res)
     }
 });
 
@@ -114,7 +129,7 @@ app.put('/users', async (req: Request, res: Response) => {
 
         res.json(updatedUser);
     } catch (error: any) {
-        handleErrors(error,res)
+        handleErrors(error, res)
     }
 });
 
@@ -159,7 +174,7 @@ app.post('/generate-pdf', async (req: Request, res: Response) => {
 
 
     } catch (error: any) {
-        handleErrors(error,res)
+        handleErrors(error, res)
     }
 });
 
@@ -185,7 +200,7 @@ app.post('/sign-in', async (req: Request, res: Response) => {
 
         return res.json({ token });
     } catch (error) {
-        handleErrors(error,res)
+        handleErrors(error, res)
     }
 });
 
