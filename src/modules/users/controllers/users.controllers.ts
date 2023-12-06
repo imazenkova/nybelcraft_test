@@ -1,48 +1,55 @@
-import { PrismaClient, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { config } from "dotenv";
-import * as express  from "express";
-import { Request, Response } from "express";
-import { ValidationError } from 'joi';
+import * as express from "express";
+import { NextFunction, Request, Response } from "express";
+import multer from "multer";
+import { v4 } from "uuid";
 import { createUserSchema, uniqUserSchema, updUserSchema } from "../../../schemas/validation.schemas";
-import { createUser, deleteUserByEmail, findUser, updUser } from '../services/users.service';
 import { checkAuthMiddleware } from '../../auth/utils/auth.middleware';
+import { USER_AVATAR_PREFIX, presignUrl, uploadImage } from '../../file/services/minio.services';
+import { createUser, deleteUserByEmail, findUserByEmail, generatePdf, updUser } from '../services/users.service';
+
 config();
 
-const prisma = new PrismaClient();
+const upload = multer();
+
 export const userRouter = express.Router();
 
-export function handleErrors(error: any, res: Response): void {
-    if (error instanceof ValidationError) {
-        const errorMessage = error.details.map((detail) => detail.message).join(', ');
-        res.status(400).json({ error: errorMessage });
-    } else {
-        res.status(500).json({ error: error?.message || 'Internal Server Error' });
-    }
-}
-
-userRouter.get('/user', checkAuthMiddleware, async (req: Request, res: Response) => {
+userRouter.get('/user', checkAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     const { email } = req.user as User
 
     try {
-        const user = await findUser(email)
-        res.json(user);
+        const user = await findUserByEmail(email);
+        console.log(user.image)
+        console.log(await presignUrl(user.image, USER_AVATAR_PREFIX))
+        const transformedUser = {
+            ...user,
+            imageUrl: user.image && await presignUrl(user.image, USER_AVATAR_PREFIX)
+        }
+        res.json(transformedUser);
     } catch (error) {
-        handleErrors(error, res)
+        return next(error)
     }
 });
 
-userRouter.post('/user', async (req: Request, res: Response) => {
-    const userCredentials = req.body;
+userRouter.post('/user', upload.single('avatar'), async (req: Request, res: Response, next: NextFunction) => {
+    const createUserDto = req.body;
+    const file = req.file;
+
     try {
-        await createUserSchema.validateAsync({ ...userCredentials });
-        const newUser = await createUser(userCredentials)
+        if (!file) throw new Error('File is required')
+        const uniqueFileName = v4()
+        await uploadImage(file.buffer, uniqueFileName, USER_AVATAR_PREFIX, file.mimetype)
+
+        await createUserSchema.validateAsync({ ...createUserDto });
+        const newUser = await createUser(createUserDto, uniqueFileName)
         res.json(newUser);
     } catch (error) {
-        handleErrors(error, res);
+        return next(error)
     }
 });
 
-userRouter.delete('/user', checkAuthMiddleware, async (req: Request, res: Response) => {
+userRouter.delete('/user', checkAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     const { email } = req.user as User;
 
     try {
@@ -50,11 +57,11 @@ userRouter.delete('/user', checkAuthMiddleware, async (req: Request, res: Respon
         const deletedUser = await deleteUserByEmail(email)
         res.json(deletedUser);
     } catch (error) {
-        handleErrors(error, res);
+        return next(error)
     }
 });
 
-userRouter.put('/user',checkAuthMiddleware, async (req: Request, res: Response) => {
+userRouter.put('/user', checkAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     const { firstName, lastName } = req.body;
     const { email } = req.user as User
 
@@ -63,6 +70,22 @@ userRouter.put('/user',checkAuthMiddleware, async (req: Request, res: Response) 
         const updatedUser = await updUser({ lastName, firstName, email })
         res.json(updatedUser);
     } catch (error) {
-        handleErrors(error, res);
+        return next(error)
+    }
+});
+
+userRouter.post('/generate-pdf', async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body;
+
+    try {
+        await uniqUserSchema.validateAsync({ email });
+        const user = await findUserByEmail(email);
+        const result = await generatePdf(email)
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${user.firstName}_${user.lastName}.pdf"`);
+
+        res.json({ result })
+    } catch (error: any) {
+        return next(error)
     }
 });

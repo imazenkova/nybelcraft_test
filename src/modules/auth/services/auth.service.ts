@@ -1,11 +1,9 @@
-import { PrismaClient } from '@prisma/client';
 import * as bcrypt from "bcrypt";
+import { config } from "dotenv";
 import jwt from "jsonwebtoken";
 import { SignInUserDto } from '../../../types';
-import { config } from "dotenv";
+import { prisma } from '../../prisma/prismaClient';
 config();
-
-const prisma = new PrismaClient();
 
 const secretKey = process.env.SECRET_KEY
 
