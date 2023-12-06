@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 services:
   db:
     image: postgres
@@ -11,20 +11,38 @@ services:
       POSTGRES_DB: users
 
   minio:
-    image: 'minio/minio'
-    container_name: 'minio'
+    image: "minio/minio"
+    container_name: "miniio"
     ports:
-      - '9000:9000'
-      - '9001:9001'
-      
+      - "9000:9000"
+      - "9001:9001"
+
     volumes:
       - miniodata:/var/lib/minio/data
     environment:
-      MINIO_ROOT_USER: '${S3_MINIO_ROOT_USER}'
-      MINIO_ROOT_PASSWORD: '${S3_MINIO_ROOT_PASSWORD}'
-      MINIO_HTTP_TLS_CERT_FILE: ''
-      MINIO_HTTP_TLS_KEY_FILE: ''
+      MINIO_ROOT_USER: "cc7bff09-abfc-4fde-a2b4-321cc28bb4d7"
+      MINIO_ROOT_PASSWORD: "109e0f13-8301-4d16-b6a9-1a343f7e19fb"
+      MINIO_HTTP_TLS_CERT_FILE: ""
+      MINIO_HTTP_TLS_KEY_FILE: ""
     command: server --console-address ":9001" /data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    environment:
+      DATABASE_URL: "postgresql://root:root@db:5430/users"
+      S3_MINIO_ROOT_USER: "cc7bff09-abfc-4fde-a2b4-321cc28bb4d7"
+      S3_MINIO_ROOT_PASSWORD: "109e0f13-8301-4d16-b6a9-1a343f7e19fb"
+      S3_PORT: 9000
+      S3_HOST: minio
+      PORT: 3000
+    depends_on:
+      - db
+      - minio
+    ports:
+      - "3000:3000"
 
 volumes:
   miniodata:

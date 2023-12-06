@@ -1,9 +1,11 @@
+import { PrismaClient } from '@prisma/client';
 import bodyParser from "body-parser";
 import { config } from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
 import { ValidationError } from 'joi';
 import { authRouter } from './modules/auth/controllers/auth.controller';
 import { userRouter } from "./modules/users/controllers/users.controllers";
+config();
 
 export function handleErrors(error: any, res: Response): void {
     if (error instanceof ValidationError) {
@@ -13,8 +15,6 @@ export function handleErrors(error: any, res: Response): void {
         res.status(500).json({ error: error?.message || 'Internal Server Error' });
     }
 }
-
-config();
 
 const app = express();
 app.use(express.json());

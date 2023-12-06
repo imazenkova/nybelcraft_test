@@ -8,7 +8,6 @@ import { createUserSchema, uniqUserSchema, updUserSchema } from "../../../schema
 import { checkAuthMiddleware } from '../../auth/utils/auth.middleware';
 import { USER_AVATAR_PREFIX, presignUrl, uploadImage } from '../../file/services/minio.services';
 import { createUser, deleteUserByEmail, findUserByEmail, generatePdf, updUser } from '../services/users.service';
-
 config();
 
 const upload = multer();
@@ -81,9 +80,6 @@ userRouter.post('/generate-pdf', async (req: Request, res: Response, next: NextF
         await uniqUserSchema.validateAsync({ email });
         const user = await findUserByEmail(email);
         const result = await generatePdf(email)
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${user.firstName}_${user.lastName}.pdf"`);
-
         res.json({ result })
     } catch (error: any) {
         return next(error)

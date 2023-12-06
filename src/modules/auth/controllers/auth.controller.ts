@@ -8,11 +8,11 @@ export const authRouter = express.Router();
 
 authRouter.post('/sign-in', async (req: Request, res: Response, next: NextFunction) => {
     const userCredentials = req.body;
+    
     try {
         await signInSchema.validateAsync({ ...userCredentials });
         const token = await signInUser(userCredentials)
         return res.json({ token });
-
     } catch (error) {
         return next(error)
     }

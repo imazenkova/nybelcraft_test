@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "start:dev": "nodemon ./src/app.ts",
+    "start": "node ./dist/app.js",
     "prisma:migrate:create": "npx prisma migrate dev --create-only",
     "prisma:migrate:deploy": "npx prisma migrate deploy",
     "prisma:generate:client": "npx prisma generate",

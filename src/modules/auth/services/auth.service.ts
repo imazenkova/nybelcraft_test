@@ -7,7 +7,6 @@ config();
 
 const secretKey = process.env.SECRET_KEY
 
-
 export const signInUser = async (userCredentials: SignInUserDto) => {
     const { email, password } = userCredentials
 
@@ -22,6 +21,5 @@ export const signInUser = async (userCredentials: SignInUserDto) => {
     }
 
     const token = jwt.sign({ email }, secretKey!);
-
     return token
 }

@@ -1,8 +1,8 @@
-import { PrismaClient, User } from ".prisma/client";
+import { User } from ".prisma/client";
 import { config } from "dotenv";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import {prisma} from "../../prisma/prismaClient"
+import { prisma } from "../../prisma/prismaClient";
 config();
 
 const secretKey = process.env.SECRET_KEY
@@ -29,6 +29,5 @@ export const checkAuthMiddleware = async (req: Request, res: Response, next: Nex
         next()
     } catch (error) {
         return next(error)
-
     }
 }
